@@ -2,37 +2,57 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lazarus Hub | Vigilancia</title>
+    <title>Lazarus Command Center</title>
     <style>
-        body { background: #000; color: #00ff00; font-family: monospace; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
-        .card { border: 1px solid #00ff00; padding: 15px; background: #050505; border-radius: 10px; }
-        iframe { width: 100%; height: 300px; border: 1px solid #333; background: white; }
-        table { width: 100%; border-collapse: collapse; }
-        td, th { border: 1px solid #222; padding: 8px; text-align: left; font-size: 12px; }
-        input, button { width: 100%; padding: 10px; margin-top: 5px; font-family: monospace; }
-        button { background: #ff0000; color: white; font-weight: bold; cursor: pointer; border: none; }
+        body { background: #050505; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 500px; gap: 20px; }
+        .card { border: 1px solid #00ff41; padding: 20px; background: rgba(0,255,65,0.05); border-radius: 12px; }
+        
+        /* PANTALLA GRANDE */
+        #live-monitor { width: 100%; height: 500px; background: white; border: 4px solid #333; border-radius: 10px; }
+        
+        .controls input, .controls select, .controls button { 
+            width: 100%; padding: 12px; margin-bottom: 10px; background: #000; border: 1px solid #00ff41; color: #00ff41; font-weight: bold;
+        }
+        button:hover { background: #00ff41; color: #000; cursor: pointer; }
+        .danger { border-color: red !important; color: red !important; }
+        .danger:hover { background: red !important; color: white !important; }
     </style>
 </head>
 <body>
-    <h1>CENTRAL DE VIGILANCIA ALEXNAV</h1>
+    <h1>ALEXNAV SURVEILLANCE - OPERACIÓN LAZARUS</h1>
+    
     <div class="grid">
         <div class="card">
-            <h3>LOGS DE ACTIVIDAD</h3>
-            <table>
-                <thead><tr><th>USUARIO</th><th>BUSQUEDA</th><th>HORA</th></tr></thead>
-                <tbody id="logs-body"></tbody>
-            </table>
+            <h3>MONITOR DE PANTALLA EN VIVO</h3>
+            <iframe id="live-monitor" src=""></iframe>
+            <h3>LOGS RECIENTES</h3>
+            <div id="logs-box" style="height: 200px; overflow-y: auto; font-size: 12px;"></div>
         </div>
+
         <div class="card">
-            <h3>PANTALLA EN VIVO</h3>
-            <iframe id="live-screen" src=""></iframe>
+            <h3>DISPOSITIVO DETECTADO: <span id="dev-name" style="color:white">Esperando...</span></h3>
             <hr>
-            <h3>COMANDOS</h3>
-            <input type="text" id="target" placeholder="ID del Usuario">
-            <button onclick="enviarBloqueo()">BLOQUEAR ACCESO</button>
+            <div class="controls">
+                <input type="text" id="target-id" placeholder="ID DEL USUARIO">
+                
+                <button class="danger" onclick="enviar('BLOQUEAR')">BLOQUEAR NAVEGADOR (PANTALLA ROJA)</button>
+                
+                <div style="display:flex; gap:10px;">
+                    <input type="number" id="mute-mins" placeholder="Minutos" min="1" max="100" style="width:70px">
+                    <button onclick="enviar('MUTE')">MUTEAR (TIEMPO DE ESPERA)</button>
+                </div>
+
+                <button style="border-color:cyan; color:cyan" onclick="enviar('LIBERAR')">LIBERAR TODO</button>
+
+                <hr>
+                <h3>GESTIÓN DE LINKS PROHIBIDOS</h3>
+                <input type="text" id="bad-link" placeholder="ej: facebook.com">
+                <button onclick="bloquearLink()">AÑADIR A LISTA NEGRA</button>
+            </div>
         </div>
     </div>
+
     <script src="admin.js"></script>
 </body>
 </html>
