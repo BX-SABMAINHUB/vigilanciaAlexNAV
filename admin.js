@@ -1,5 +1,5 @@
 const SB_URL = "https://gmvczheriaqouwynfdyv.supabase.co";
-const SB_KEY = "TU_ANON_KEY_DE_SUPABASE"; // La misma que usaste en el navegador
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdtdmN6aGVyaWFxb3V3eW5mZHl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0MTM1OTQsImV4cCI6MjA4NTk4OTU5NH0.22wbgR33dCQ1vfB_EdWpxGY5w811_jsf1dqbU1P6dQs"; // La misma que usaste en el navegador
 
 // 1. Cargar Logs de actividad
 async function fetchLogs() {
