@@ -1,6 +1,4 @@
 {
   "version": 2,
-  "pages": {
-    "index.html": { "cacheControl": "no-cache" }
-  }
+  "cleanUrls": true
 }
