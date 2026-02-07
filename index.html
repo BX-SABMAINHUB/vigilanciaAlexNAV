@@ -2,64 +2,176 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LAZARUS HUB | Admin Central</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>LAZARUS OPERATIONAL HUB | V4.5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #0a0a0c; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; }
-        
-        /* SIDEBAR USUARIOS */
-        .sidebar { width: 320px; border-right: 1px solid #00ff41; background: #000; overflow-y: auto; }
-        .user-card { padding: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
-        .user-card:hover, .user-card.active { background: #00ff41; color: #000; }
-        .status-on { color: lime; font-size: 10px; }
+        :root { --neon: #00ff41; --danger: #ff003c; --bg: #050505; --card: #0d0d0d; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        /* MONITOR CENTRAL */
-        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; }
-        .monitor { flex: 1; border: 2px solid #00ff41; background: #fff; border-radius: 10px; overflow: hidden; }
+        /* SIDEBAR DE DISPOSITIVOS */
+        .sidebar { width: 380px; border-right: 1px solid #222; background: #000; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 25px; border-bottom: 2px solid var(--neon); background: rgba(0, 255, 65, 0.05); }
+        .user-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .user-node { 
+            background: var(--card); border: 1px solid #222; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer;
+            position: relative; transition: 0.2s;
+        }
+        .user-node:hover { border-color: var(--neon); background: rgba(0, 255, 65, 0.02); }
+        .user-node.active { border-left: 5px solid var(--neon); background: #111; }
+        .status-pulse { width: 8px; height: 8px; background: var(--neon); border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px var(--neon); }
+
+        /* MONITOR PRINCIPAL */
+        .main-stage { flex: 1; display: flex; flex-direction: column; background: #000; }
+        .top-bar { height: 60px; border-bottom: 1px solid #222; display: flex; align-items: center; padding: 0 30px; justify-content: space-between; }
+        .screen-container { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .viewport { flex: 1; border: 1px solid #333; border-radius: 12px; background: #fff; overflow: hidden; position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* CONTROLES */
-        .controls { width: 350px; background: #000; border-left: 1px solid #00ff41; padding: 20px; }
-        .btn { width: 100%; padding: 12px; margin-bottom: 10px; background: none; border: 1px solid #00ff41; color: #00ff41; font-weight: bold; cursor: pointer; }
-        .btn:hover { background: #00ff41; color: #000; }
-        .input-dark { width: 90%; background: #111; border: 1px solid #00ff41; color: lime; padding: 10px; margin-bottom: 10px; }
+        /* CONSOLA DE COMANDOS (ESTILO LAZARUS) */
+        .control-grid { height: 280px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; padding: 20px; background: #080808; border-top: 1px solid #222; }
+        .cmd-group { background: #0d0d0d; border: 1px solid #222; padding: 15px; border-radius: 10px; }
+        .btn-lazarus { 
+            width: 100%; padding: 12px; margin-top: 10px; background: none; border: 1px solid var(--neon); color: var(--neon); 
+            font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px;
+        }
+        .btn-lazarus:hover { background: var(--neon); color: #000; }
+        .btn-danger { border-color: var(--danger); color: var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
+
+        input { width: 100%; background: #000; border: 1px solid #333; color: var(--neon); padding: 10px; margin-top: 5px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div style="padding: 20px; border-bottom: 2px solid #00ff41; background: #050505;">
-        <h3>SISTEMA LAZARUS</h3>
-        <p>Usuarios activos detectados:</p>
+    <div class="sidebar-header">
+        <h2 style="margin:0; font-size: 1.2rem;"><i class="fas fa-microchip"></i> LAZARUS HUB</h2>
+        <small id="net-status">RED: ESTABLE | <span id="user-count">0</span> NODOS</small>
     </div>
-    <div id="user-list"></div>
+    <div class="user-list" id="nodes">
+        </div>
 </div>
 
-<div class="main">
-    <h2 id="target-title">SELECCIONE UN OBJETIVO</h2>
-    <div class="monitor">
-        <iframe id="live-screen" src="about:blank"></iframe>
+<div class="main-stage">
+    <div class="top-bar">
+        <div id="target-info">SELECCIONE UN NODO PARA VIGILANCIA REMOTA</div>
+        <div id="current-url" style="font-size: 10px; color: #555;"></div>
+    </div>
+    
+    <div class="screen-container">
+        <div class="viewport">
+            <iframe id="monitor" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <div class="control-grid">
+        <div class="cmd-group">
+            <h4 style="margin-top:0"><i class="fas fa-shield-alt"></i> SEGURIDAD</h4>
+            <button class="btn-lazarus btn-danger" onclick="execute('BAN')">Bloqueo Total</button>
+            <button class="btn-lazarus" onclick="execute('UNBAN')">Levantar Sanción</button>
+            <button class="btn-lazarus" style="border-color: #ffaa00; color:#ffaa00;" onclick="execute('RELOAD')">Forzar Reinicio</button>
+        </div>
+        <div class="cmd-group">
+            <h4><i class="fas fa-globe"></i> NAVEGACIÓN FORZADA</h4>
+            <input type="text" id="target-url" placeholder="https://dominio.com">
+            <button class="btn-lazarus" onclick="execute('GOTO')">Redirigir Navegador</button>
+            <button class="btn-lazarus" onclick="execute('GOOGLE')">Abrir Google</button>
+        </div>
+        <div class="cmd-group">
+            <h4><i class="fas fa-filter"></i> FILTRADO DE CONTENIDO</h4>
+            <input type="text" id="blacklist-url" placeholder="url_a_bloquear.com">
+            <button class="btn-lazarus" onclick="addToBlacklist()">Añadir a Blacklist</button>
+            <p style="font-size: 9px; color: #444; margin-top:10px;">* El bloqueo se aplica a todos los nodos conectados.</p>
+        </div>
     </div>
 </div>
 
-<div class="controls">
-    <h3>CONSOLA DE MANDO</h3>
-    <p>ID Seleccionado: <span id="id-selected" style="color:white;">Ninguno</span></p>
+<script>
+    // --- CONFIGURACIÓN DE CONEXIÓN ---
+    const SB_URL = "https://gmvczheriaqouwynfdyv.supabase.co";
+    const SB_KEY = "TU_ANON_KEY_AQUÍ"; // REEMPLAZA ESTO
     
-    <button class="btn" style="border-color: red; color: red;" onclick="exec('BAN')">BANEAR USUARIO</button>
-    <button class="btn" onclick="exec('UNBAN')">DESBANEAR</button>
-    
-    <hr>
-    <h3>CONTROL DE NAVEGACIÓN</h3>
-    <input type="text" id="force-url" class="input-dark" placeholder="URL para forzar...">
-    <button class="btn" onclick="exec('GOTO')">FORZAR SITIO WEB</button>
-    
-    <hr>
-    <h3>BLOQUEADOR DE LINKS</h3>
-    <input type="text" id="block-url" class="input-dark" placeholder="ejemplo: youtube.com">
-    <button class="btn" onclick="addBlacklist()">BLOQUEAR URL GLOBAL</button>
-</div>
+    let activeID = null;
 
-<script src="admin.js"></script>
+    async function syncLazarus() {
+        try {
+            // Obtenemos los últimos 20 logs
+            const res = await fetch(`${SB_URL}/rest/v1/logs?select=*&order=timestamp.desc&limit=20`, {
+                headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+            });
+            const data = await res.json();
+
+            // Filtrar IDs únicos para la lista
+            const nodes = {};
+            data.forEach(log => {
+                if (!nodes[log.usuario_id]) nodes[log.usuario_id] = log;
+            });
+
+            const nodesContainer = document.getElementById('nodes');
+            const nodeIds = Object.keys(nodes);
+            document.getElementById('user-count').innerText = nodeIds.length;
+
+            nodesContainer.innerHTML = nodeIds.map(id => `
+                <div class="user-node ${activeID === id ? 'active' : ''}" onclick="selectNode('${id}')">
+                    <div class="status-pulse"></div>
+                    <b>${id}</b><br>
+                    <small style="color:#555; font-size:10px;">ACTIVO: ${nodes[id].url_actual.substring(0, 35)}...</small>
+                </div>
+            `).join('');
+
+            // Actualizar monitor si hay alguien seleccionado
+            if (activeID) {
+                const activeLog = nodes[activeID];
+                if (activeLog) {
+                    const iframe = document.getElementById('monitor');
+                    if(iframe.src !== activeLog.url_actual) {
+                        iframe.src = activeLog.url_actual;
+                        document.getElementById('current-url').innerText = "LINK: " + activeLog.url_actual;
+                    }
+                }
+            }
+        } catch (e) { console.error("Error de sincronización:", e); }
+    }
+
+    function selectNode(id) {
+        activeID = id;
+        document.getElementById('target-info').innerText = "MODO VIGILANCIA ACTIVO: " + id;
+        syncLazarus();
+    }
+
+    async function execute(command) {
+        if (!activeID) return alert("ERROR: SELECCIONE UN NODO PRIMERO");
+        
+        let content = document.getElementById('target-url').value;
+        if(command === 'GOOGLE') { command = 'GOTO'; content = 'https://www.google.com/search?igu=1'; }
+
+        // Limpiar órdenes viejas
+        await fetch(`${SB_URL}/rest/v1/ordenes?usuario_id=eq.${activeID}`, { 
+            method: 'DELETE', headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } 
+        });
+
+        // Enviar nueva orden
+        await fetch(`${SB_URL}/rest/v1/ordenes`, {
+            method: 'POST',
+            headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_id: activeID, orden: command, contenido: content, activa: true })
+        });
+        
+        alert("COMANDO " + command + " DESPACHADO A " + activeID);
+    }
+
+    async function addToBlacklist() {
+        const url = document.getElementById('blacklist-url').value;
+        if(!url) return;
+        await fetch(`${SB_URL}/rest/v1/links_bloqueados`, {
+            method: 'POST',
+            headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+        alert("DOMINIO " + url + " BLOQUEADO GLOBALMENTE");
+    }
+
+    setInterval(syncLazarus, 2000);
+</script>
 </body>
 </html>
